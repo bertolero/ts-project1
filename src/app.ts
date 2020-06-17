@@ -13,14 +13,30 @@ function Autobind (target: any,
   return adjDescriptor
 }
 
+// project status enum
+enum ProjectStatus {
+    Active,
+    Finished
+}
+
+// project class
+class Project {
+  constructor (public id: string, public title: string, public description: string, public people: number, public status: ProjectStatus) {
+  }
+}
+
+// listener type
+type Listener = (item: Project[]) => void;
+
 // project state management
 class ProjectState {
-    private listeners: any[] = [];
-    private projects: any[] = [];
-    private static instance : ProjectState
+    private listeners: Listener[] = [];
+    private projects: Project[] = [];
+    private static instance: ProjectState
 
     // eslint-disable-next-line no-useless-constructor
-    private constructor () {}
+    private constructor () {
+    }
 
     static getInstance () {
       if (this.instance) {
@@ -30,17 +46,18 @@ class ProjectState {
       return this.instance
     }
 
-    addListener (listener: Function) {
+    addListener (listener: Listener) {
       this.listeners.push(listener)
     }
 
     addProject (title: string, description: string, numberOfPeople: number) {
-      const newProject = {
-        id: Math.random().toString(),
-        title: title,
-        description: description,
-        people: numberOfPeople
-      }
+      const newProject = new Project(
+        Math.random().toString(),
+        title,
+        description,
+        numberOfPeople,
+        ProjectStatus.Active
+      )
       this.projects.push(newProject)
       for (const listenerFn of this.listeners) {
         listenerFn(this.projects.slice())
@@ -95,7 +112,7 @@ class ProjectList {
       this.element = importedNode.firstElementChild as HTMLElement
       this.element.id = `${type}-projects`
 
-      projectState.addListener((projects: any[]) => {
+      projectState.addListener((projects: Project[]) => {
         this.assignedProjects = projects
         this.renderProjects()
       })
