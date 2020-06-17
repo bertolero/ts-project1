@@ -121,12 +121,35 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
       this.attach(insertAtStart)
     }
 
-    private attach (insertAtBeginning:boolean) {
+    private attach (insertAtBeginning: boolean) {
       this.hostElement.insertAdjacentElement(insertAtBeginning ? 'afterbegin' : 'beforeend', this.element)
     }
 
-    abstract configure():void
-    abstract renderContent():void
+    abstract configure(): void
+
+    abstract renderContent(): void
+}
+
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+    private project: Project
+
+    constructor (hostId: string, project: Project) {
+      super('single-project', hostId, false, project.id)
+
+      this.project = project
+
+      this.configure()
+      this.renderContent()
+    }
+
+    configure () {
+    }
+
+    renderContent () {
+        this.element.querySelector('h2')!.textContent = this.project.title
+        this.element.querySelector('h3')!.textContent = this.project.people.toString()
+        this.element.querySelector('p')!.textContent = this.project.description
+    }
 }
 
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
@@ -162,9 +185,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
       const listElements = document.getElementById(`${this.type}-projects-list`)!
       listElements.innerHTML = ''
       for (const projectItem of this.assignedProjects!) {
-        const listItem = document.createElement('li')
-        listItem.textContent = projectItem.title
-        listElements.appendChild(listItem)
+        new ProjectItem(this.element.querySelector('ul')!.id, projectItem)
       }
     }
 }
